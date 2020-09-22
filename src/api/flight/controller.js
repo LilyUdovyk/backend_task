@@ -47,7 +47,11 @@ export const update = ({ bodymen: { body }, params, flight }, res, next) =>
       // }
       return result
     })
-    .then((flight) => flight ? Object.assign(flight, body).save() : null)
+    .then((flight) => {
+      if (!flight) return null;
+      const purifiedBody = Object.keys(body).reduce((acc, key) => body[key] ? { ...acc, [key]: body[key] } : acc, {});     
+      return Object.assign(flight, purifiedBody).save();
+    })
     .then((flight) => flight ? flight.view(true) : null)
     .then(success(res))
     .catch(next)

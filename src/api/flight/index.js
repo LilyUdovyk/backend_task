@@ -50,7 +50,7 @@ router.get('/:id',
  */
 router.post('/',
   token({ required: true }),
-  body({ plain, time, passengers }),
+  body({ plain, time }),
   create)
 
 /**
@@ -66,7 +66,7 @@ router.post('/',
  */
 router.put('/:id',
   token({ required: true }),
-  body({ plain, time, passengers }),
+  body({ plain: { ...plain, required: false }, time }),
   update)
 
 

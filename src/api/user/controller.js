@@ -4,14 +4,14 @@ import { Flight } from '../flight'
 
 export const index = ({ querymen: { query, select, cursor } }, res, next) =>
   User.find(query, select, cursor)
-  .populate("flights", "-__v")
+    .populate("flights", "-__v")
     .then((users) => users.map((user) => user.view(true)))
     .then(success(res))
     .catch(next)
 
 export const show = ({ params }, res, next) =>
   User.findById(params.id)
-  .populate("flights", "-__v")
+    .populate("flights", "-__v")
     .then(notFound(res))
     .then((user) => user ? user.view(true) : null)
     .then(success(res))
@@ -42,6 +42,7 @@ export const update = ({ bodymen: { body }, params, user }, res, next) =>
     .then(notFound(res))
     .then((result) => {
       if (!result) return null
+      console.log("body", body)
       // const isAdmin = user.role === 'admin'
       // const isSelfUpdate = user.id === result.id
       // if (!isSelfUpdate && !isAdmin) {
@@ -53,21 +54,27 @@ export const update = ({ bodymen: { body }, params, user }, res, next) =>
       // }
       return result
     })
-    .then((user) => user ? Object.assign(user, body).save() : null)
+    .then((user) => {
+      if (!user) return null;
+      const purifiedBody = Object.keys(body).reduce((acc, key) => body[key] ? { ...acc, [key]: body[key] } : acc, {});
+
+      if (purifiedBody.flights) {
+        if (purifiedBody.flights.action === 'append') {
+          purifiedBody.flights = [...user.flights, purifiedBody.flights.flight];
+        } else {
+          purifiedBody.flights = user.flights.filter(f => f !== purifiedBody.flights.flight)
+        }
+      }
+      
+      return Object.assign(user, purifiedBody).save();
+    })
     .then((user) => user ? user.view(true) : null)
     .then((user) => {
       if (!user || !user.flights) return null
       user.flights.forEach(async flight => {
-        // if(flight.passengers){
-        //   flight.passengers.forEach(async passenger => {
-        //   console.log("passenger.id", passenger.id )
-        //   console.log("params.id", params.id )
-        //     if(passenger.id === params.id) return
-        //   })
-        // }
         await Flight.findByIdAndUpdate(
           { _id: flight },
-          { $push: { passengers: params.id }},
+          { $push: { passengers: params.id } },
           { new: true, useFindAndModify: false }
         );
       })

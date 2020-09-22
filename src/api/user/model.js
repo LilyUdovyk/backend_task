@@ -28,13 +28,13 @@ const userSchema = new Schema({
   },
   firstName: {
     type: String,
-    // required: true,
+    required: true,
     trim: true
   },
   lastName: {
-      type: String,
-      // required: true,
-      trim: true
+    type: String,
+    required: true,
+    trim: true
   },
   services: {
     facebook: String,

@@ -50,7 +50,7 @@ router.get('/:id',
  */
 router.post('/',
   token({ required: true }),
-  body({ name, model, flights  }),
+  body({ name, model }),
   create)
 
 /**
@@ -66,7 +66,7 @@ router.post('/',
  */
 router.put('/:id',
   token({ required: true }),
-  body({ name, model, flights }),
+  body({ name: { ...name, required: false }, model: { ...model, required: false } }),
   update)
 
 

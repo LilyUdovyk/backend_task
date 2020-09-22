@@ -37,8 +37,12 @@ export const update = ({ bodymen: { body }, params, plain }, res, next) =>
     //   }
       return result
     })
-    .then((plain) => plain ? Object.assign(plain, body).save() : null)
-    .then((plain) => plain ? plainview(true) : null)
+    .then((plain) => {
+      if (!plain) return null;
+      const purifiedBody = Object.keys(body).reduce((acc, key) => body[key] ? { ...acc, [key]: body[key] } : acc, {});     
+      return Object.assign(plain, purifiedBody).save();
+    })
+    .then((plain) => plain ? plain.view(true) : null)
     .then(success(res))
     .catch(next)
 

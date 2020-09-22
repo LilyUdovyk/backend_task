@@ -66,7 +66,7 @@ router.get('/:id',
  */
 router.post('/',
   master(),
-  body({ email, password, login, firstName, lastName, picture, country, flights }),
+  body({ email, password, login, firstName, lastName, picture, country }),
   create)
 
 /**
@@ -84,7 +84,12 @@ router.post('/',
  */
 router.put('/:id',
   token({ required: true }),
-  body({ email, firstName, lastName, picture, country, flights }),
+  body({ email, firstName: { ...firstName, required: false }, lastName: { ...lastName, required: false }, picture, country, 
+    flights: {
+      action: { type: String, enum: ['update', 'append'], default: 'append' },
+      flight: { type: String, required: true } 
+    }
+  }),
   update)
 
 /**
