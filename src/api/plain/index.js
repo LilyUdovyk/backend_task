@@ -21,7 +21,7 @@ const { name, model, flights } = schema.tree
  * @apiError 401 Admin access only.
  */
 router.get('/',
-  token({ required: true }),
+  token({ required: true, roles: 'admin' }),
   query(),
   index)
 
@@ -34,7 +34,7 @@ router.get('/',
  * @apiError 404 Flight not found.
  */
 router.get('/:id',
-  token({ required: true }),
+  token({ required: true, roles: 'admin' }),
   show)
 
 /**
@@ -49,7 +49,7 @@ router.get('/:id',
  * @apiError 401 Master access only.
  */
 router.post('/',
-  token({ required: true }),
+  token({ required: true, roles: 'admin' }),
   body({ name, model }),
   create)
 
@@ -65,7 +65,7 @@ router.post('/',
  * @apiError 404 Plain not found.
  */
 router.put('/:id',
-  token({ required: true }),
+  token({ required: true, roles: 'admin' }),
   body({ name: { ...name, required: false }, model: { ...model, required: false } }),
   update)
 
@@ -81,7 +81,7 @@ router.put('/:id',
  * @apiError 404 Plain not found.
  */
 router.delete('/:id',
-  token({ required: true }),
+  token({ required: true, roles: 'admin' }),
   destroy)
 
 export default router

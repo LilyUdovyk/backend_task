@@ -7,7 +7,7 @@ import { schema } from './model'
 export User, { schema } from './model'
 
 const router = new Router()
-const { email, password, login, firstName, lastName, picture, country, flights } = schema.tree
+const { email, password, login, firstName, lastName, picture, country, role, flights } = schema.tree
 
 /**
  * @api {get} /users Retrieve users
@@ -21,7 +21,7 @@ const { email, password, login, firstName, lastName, picture, country, flights }
  * @apiError 401 Admin access only.
  */
 router.get('/',
-  token({ required: true, }),
+  token({ required: true, roles: 'admin' }),
   query(),
   index)
 
@@ -46,6 +46,7 @@ router.get('/me',
  * @apiError 404 User not found.
  */
 router.get('/:id',
+  token({ required: true, roles: 'admin' }),
   show)
 
 /**
@@ -66,7 +67,7 @@ router.get('/:id',
  */
 router.post('/',
   master(),
-  body({ email, password, login, firstName, lastName, picture, country }),
+  body({ email, password, login, firstName, lastName, picture, country, role }),
   create)
 
 /**
@@ -84,7 +85,7 @@ router.post('/',
  */
 router.put('/:id',
   token({ required: true }),
-  body({ email, firstName: { ...firstName, required: false }, lastName: { ...lastName, required: false }, picture, country, 
+  body({ email, firstName: { ...firstName, required: false }, lastName: { ...lastName, required: false }, picture, country, role,
     flights: {
       action: { type: String, enum: ['update', 'append'], default: 'append' },
       flight: { type: String, required: true } 

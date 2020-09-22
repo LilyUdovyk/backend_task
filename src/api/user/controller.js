@@ -43,18 +43,18 @@ export const update = ({ bodymen: { body }, params, user }, res, next) =>
     .then((result) => {
       if (!result) return null
       console.log("body", body)
-      // const isAdmin = user.role === 'admin'
-      // const isSelfUpdate = user.id === result.id
-      // if (!isSelfUpdate && !isAdmin) {
-      //   res.status(401).json({
-      //     valid: false,
-      //     message: 'You can\'t change other user\'s data'
-      //   })
-      //   return null
-      // }
+      const isAdmin = user.role === 'admin'
+      const isSelfUpdate = user.id === result.id
+      if (!isSelfUpdate && !isAdmin) {
+        res.status(401).json({
+          valid: false,
+          message: 'You can\'t change other user\'s data'
+        })
+        return null
+      }
       return result
     })
-    .then((user) => {
+    .then(async (user) => {
       if (!user) return null;
       const purifiedBody = Object.keys(body).reduce((acc, key) => body[key] ? { ...acc, [key]: body[key] } : acc, {});
 
@@ -64,8 +64,7 @@ export const update = ({ bodymen: { body }, params, user }, res, next) =>
         } else {
           purifiedBody.flights = user.flights.filter(f => f !== purifiedBody.flights.flight)
         }
-      }
-      
+      }     
       return Object.assign(user, purifiedBody).save();
     })
     .then((user) => user ? user.view(true) : null)
