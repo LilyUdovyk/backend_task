@@ -4,14 +4,14 @@ import { Flight } from '../flight'
 
 export const index = ({ querymen: { query, select, cursor } }, res, next) =>
   User.find(query, select, cursor)
-    .populate("flights", "-__v")
+    // .populate("flights", "-__v -passengers -createdAt -updatedAt -default")
     .then((users) => users.map((user) => user.view(true)))
     .then(success(res))
     .catch(next)
 
 export const show = ({ params }, res, next) =>
   User.findById(params.id)
-    .populate("flights", "-__v")
+    // .populate("flights", "-__v -passengers -createdAt -updatedAt -default")
     .then(notFound(res))
     .then((user) => user ? user.view(true) : null)
     .then(success(res))
@@ -42,7 +42,6 @@ export const update = ({ bodymen: { body }, params, user }, res, next) =>
     .then(notFound(res))
     .then((result) => {
       if (!result) return null
-      console.log("body", body)
       const isAdmin = user.role === 'admin'
       const isSelfUpdate = user.id === result.id
       if (!isSelfUpdate && !isAdmin) {
@@ -106,6 +105,20 @@ export const updatePassword = ({ bodymen: { body }, params, user }, res, next) =
 export const destroy = ({ params }, res, next) =>
   User.findById(params.id)
     .then(notFound(res))
+    .then(async (user) => {
+      await updateFlights (user, params)
+      return user
+    })
     .then((user) => user ? user.remove() : null)
     .then(success(res, 204))
     .catch(next)
+
+    async function updateFlights (user, params) {
+      if (!user || !user.flights.length) return null
+      user.flights.forEach(async flight => {
+        const foundFlight = await Flight.findById(flight._id)
+        foundFlight.passengers = foundFlight.passengers.filter(passenger => passenger._id != params.id)
+        foundFlight.save()
+      })
+    }
+

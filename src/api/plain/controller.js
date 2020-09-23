@@ -27,14 +27,14 @@ export const update = ({ bodymen: { body }, params, plain }, res, next) =>
     .then(notFound(res))
     .then((result) => {
       if (!result) return null
-    //   const isAdmin = user.role === 'admin'
-    //   if (!isAdmin) {
-    //     res.status(401).json({
-    //       valid: false,
-    //       message: 'You can\'t change flight\'s data'
-    //     })
-    //     return null
-    //   }
+      // const isAdmin = user.role === 'admin'
+      // if (!isAdmin) {
+      //   res.status(401).json({
+      //     valid: false,
+      //     message: 'You can\'t change flight\'s data'
+      //   })
+      //   return null
+      // }
       return result
     })
     .then((plain) => {
@@ -49,6 +49,10 @@ export const update = ({ bodymen: { body }, params, plain }, res, next) =>
 export const destroy = ({ params }, res, next) =>
   Plain.findById(params.id)
     .then(notFound(res))
-    .then((plain) => plain ? plain.remove() : null)
+    // .then(async (plain) => {
+    //   await deleteFlights (plain, params)
+    // })
+    // .then((plain) => plain ? plain.remove() : null)
     .then(success(res, 204))
     .catch(next)
+

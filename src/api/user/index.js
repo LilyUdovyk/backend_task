@@ -85,7 +85,7 @@ router.post('/',
  */
 router.put('/:id',
   token({ required: true }),
-  body({ email, firstName: { ...firstName, required: false }, lastName: { ...lastName, required: false }, picture, country, role,
+  body({ email: { ...email, required: false }, firstName: { ...firstName, required: false }, lastName: { ...lastName, required: false }, picture, country, role,
     flights: {
       action: { type: String, enum: ['update', 'append'], default: 'append' },
       flight: { type: String, required: true } 
