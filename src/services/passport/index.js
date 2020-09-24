@@ -8,6 +8,8 @@ import * as facebookService from '../facebook'
 import * as githubService from '../github'
 import * as googleService from '../google'
 import User, { schema } from '../../api/user/model'
+import userRoles from '../../api/user/user-roles'
+
 
 export const password = () => (req, res, next) =>
   passport.authenticate('password', { session: false }, (err, user, info) => {
@@ -34,13 +36,8 @@ export const google = () =>
 export const master = () =>
   passport.authenticate('master', { session: false })
 
-export const token = ({ required, roles = User.roles } = {}) => (req, res, next) =>
+export const token = ({ required, roles = userRoles } = {}) => (req, res, next) =>
   passport.authenticate('token', { session: false }, (err, user, info) => {
-  // console.log("user", user)
-  // console.log("err", err)
-  // console.log("err || (required && !user) ", err || (required && !user) )
-  // console.log("required", required)
-  // console.log("roles", roles)
     if (err || (required && !user) || (required && !~roles.indexOf(user.role))) {
       return res.status(401).end()
     }

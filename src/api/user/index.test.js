@@ -2,6 +2,7 @@ import request from 'supertest'
 import { masterKey, apiRoot } from '../../config'
 import { signSync } from '../../services/jwt'
 import express from '../../services/express'
+import userRoles, { admin } from './user-roles'
 import routes, { User } from '.'
 
 const app = () => express(apiRoot, routes)
@@ -11,7 +12,7 @@ let user1, user2, admin, session1, session2, adminSession
 beforeEach(async () => {
   user1 = await User.create({ name: 'user', email: 'a@a.com', password: '123456' })
   user2 = await User.create({ name: 'user', email: 'b@b.com', password: '123456' })
-  admin = await User.create({ email: 'c@c.com', password: '123456', role: 'admin' })
+  admin = await User.create({ email: 'c@c.com', password: '123456', role: admin })
   session1 = signSync(user1.id)
   session2 = signSync(user2.id)
   adminSession = signSync(admin.id)
@@ -115,7 +116,7 @@ test('POST /users 201 (master)', async () => {
 test('POST /users 201 (master)', async () => {
   const { status, body } = await request(app())
     .post(apiRoot)
-    .send({ access_token: masterKey, email: 'd@d.com', password: '123456', role: 'admin' })
+    .send({ access_token: masterKey, email: 'd@d.com', password: '123456', role: admin })
   expect(status).toBe(201)
   expect(typeof body).toBe('object')
   expect(body.email).toBe('d@d.com')

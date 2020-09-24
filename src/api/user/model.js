@@ -4,8 +4,7 @@ import randtoken from 'rand-token'
 import mongoose, { Schema } from 'mongoose'
 import mongooseKeywords from 'mongoose-keywords'
 import { env } from '../../config'
-
-const roles = ['passenger', 'admin']
+import userRoles, { passenger } from './user-roles'
 
 const userSchema = new Schema({
   email: {
@@ -43,8 +42,8 @@ const userSchema = new Schema({
   },
   role: {
     type: String,
-    enum: roles,
-    default: 'passenger'
+    enum: userRoles,
+    default: passenger
   },
   picture: {
     type: String,
@@ -52,7 +51,7 @@ const userSchema = new Schema({
   },
   country: {
     type: String,
-    // required: true,
+    required: true,
     trim: true
   },
   flights: {
@@ -101,37 +100,13 @@ userSchema.pre('save', function (next) {
   }).catch(next)
 })
 
-// userSchema.methods.view = function (flag) {
-//   const baseView = {
-//       id: this.id,
-//       fullName: this.fullName,
-//       picture: this.picture,
-//       country: this.country
-//   }
-  
-//   switch (flag) {
-//       case 'full': {
-//           return {
-//               ...baseView,
-//               login: this.login,
-//               email: this.email,
-//               flights: this.flights,
-//               createdAt: this.createdAt
-//           }
-//       }
-//       default: {
-//           return baseView;
-//       }
-//   }
-// }
-
 userSchema.methods = {
   view (full) {
     const view = {}
-    let fields = ['id', 'fullName', 'picture', 'country']
+    let fields = ['fullName', 'picture', 'country']
 
     if (full) {
-      fields = [...fields, 'login', 'email', 'role', 'createdAt', 'flights']
+      fields = [...fields, 'id', 'login', 'email', 'role', 'createdAt', 'flights']
     }
 
     fields.forEach((field) => { view[field] = this[field] })
@@ -146,7 +121,7 @@ userSchema.methods = {
 }
 
 userSchema.statics = {
-  roles,
+  userRoles,
 
   createFromService ({ service, id, email, login, fullName, picture, country, flights }) {
     return this.findOne({ $or: [{ [`services.${service}`]: id }, { email }] }).then((user) => {

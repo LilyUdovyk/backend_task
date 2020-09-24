@@ -1,6 +1,6 @@
 import mongoose, { Schema } from 'mongoose'
 
-const plainSchema = new Schema({
+const planeSchema = new Schema({
   name: {
     type: String,
     required: true
@@ -23,13 +23,13 @@ const plainSchema = new Schema({
 
 
 
-plainSchema.methods = {
+planeSchema.methods = {
   view (full) {
     const view = {}
-    let fields = ['id', 'name', 'model', 'flights']
+    let fields = ['name', 'model', 'flights']
 
     if (full) {
-      fields = [...fields, 'flightsAmount']
+      fields = [...fields, 'id', 'flightsAmount']
     }
 
     fields.forEach((field) => { view[field] = this[field] })
@@ -38,12 +38,12 @@ plainSchema.methods = {
   }
 }
 
-plainSchema.virtual('flightsAmount')
+planeSchema.virtual('flightsAmount')
     .get(function () {
         return this.flights.length;
     })
 
-const model = mongoose.model('Plain', plainSchema)
+const model = mongoose.model('Plane', planeSchema)
 
 export const schema = model.schema
 export default model

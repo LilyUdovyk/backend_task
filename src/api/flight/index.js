@@ -3,11 +3,12 @@ import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { password as passwordAuth, master, token } from '../../services/passport'
 import { index, show, create, update, destroy } from './controller'
+import { admin } from '../user/user-roles'
 import { schema } from './model'
 export Flight, { schema } from './model'
 
 const router = new Router()
-const { plain, time, passengers } = schema.tree
+const { plane, time, passengers } = schema.tree
 
 /**
  * @api {get} /flight Retrieve flights
@@ -21,7 +22,7 @@ const { plain, time, passengers } = schema.tree
  * @apiError 401 Admin access only.
  */
 router.get('/',
-  // token({ required: true }),
+  token({ required: false }),
   query(),
   index)
 
@@ -34,7 +35,7 @@ router.get('/',
  * @apiError 404 Flight not found.
  */
 router.get('/:id',
-  // token({ required: true  }),
+  token({ required: false  }),
   show)
 
 /**
@@ -49,8 +50,8 @@ router.get('/:id',
  * @apiError 401 Master access only.
  */
 router.post('/',
-  token({ required: true, roles: 'admin' }),
-  body({ plain, time }),
+  token({ required: true, roles: admin }),
+  body({ plane, time }),
   create)
 
 /**
@@ -65,8 +66,8 @@ router.post('/',
  * @apiError 404 Flight not found.
  */
 router.put('/:id',
-  token({ required: true, roles: 'admin' }),
-  body({ plain: { ...plain, required: false }, time }),
+  token({ required: true, roles: admin }),
+  body({ plane: { ...plane, required: false }, time }),
   update)
 
 /**
@@ -80,7 +81,7 @@ router.put('/:id',
  * @apiError 404 Flight not found.
  */
 router.delete('/:id',
-  token({ required: true, roles: 'admin' }),
+  token({ required: true, roles: admin }),
   destroy)
 
 export default router

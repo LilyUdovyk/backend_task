@@ -3,6 +3,7 @@ import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
 import { password as passwordAuth, master, token } from '../../services/passport'
 import { index, showMe, show, create, update, updatePassword, destroy } from './controller'
+import userRoles, { admin } from './user-roles'
 import { schema } from './model'
 export User, { schema } from './model'
 
@@ -21,7 +22,7 @@ const { email, password, login, firstName, lastName, picture, country, role, fli
  * @apiError 401 Admin access only.
  */
 router.get('/',
-  token({ required: true, roles: 'admin' }),
+  token({ required: true, roles: admin }),
   query(),
   index)
 
@@ -46,7 +47,7 @@ router.get('/me',
  * @apiError 404 User not found.
  */
 router.get('/:id',
-  token({ required: true, roles: 'admin' }),
+  token({ required: true, roles: admin }),
   show)
 
 /**
@@ -67,7 +68,12 @@ router.get('/:id',
  */
 router.post('/',
   master(),
-  body({ email, password, login, firstName, lastName, picture, country, role }),
+  body({ email, password, login, firstName, lastName, picture, country }),
+  create)
+
+router.post('/admin',
+  token({ required: true, roles: admin }),
+  body({ email, password, login, firstName, lastName, picture, country, role: { ...firstName, default: admin } }),
   create)
 
 /**
@@ -85,7 +91,7 @@ router.post('/',
  */
 router.put('/:id',
   token({ required: true }),
-  body({ email: { ...email, required: false }, firstName: { ...firstName, required: false }, lastName: { ...lastName, required: false }, picture, country, role,
+  body({ email: { ...email, required: false }, firstName: { ...firstName, required: false }, lastName: { ...lastName, required: false }, picture, country: { ...country, required: false },
     flights: {
       action: { type: String, enum: ['update', 'append'], default: 'append' },
       flight: { type: String, required: true } 

@@ -1,9 +1,9 @@
 import mongoose, { Schema } from 'mongoose'
 
 const flightSchema = new Schema({
-  plain :{
+  plane :{
     type:mongoose.Schema.Types.ObjectId,
-    ref:'Plain',
+    ref:'Plane',
     required: true
   },
   time: {
@@ -26,10 +26,10 @@ const flightSchema = new Schema({
 flightSchema.methods = {
   view (full) {
     const view = {}
-    let fields = ['id', 'plain', 'time']
+    let fields = ['plane', 'time']
 
     if (full) {
-      fields = [...fields, 'passengers']
+      fields = [...fields, 'id', 'passengers']
     }
 
     fields.forEach((field) => { view[field] = this[field] })

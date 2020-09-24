@@ -1,4 +1,5 @@
 import * as response from '.'
+import userRoles, { admin } from '../../api/user/user-roles'
 
 let res
 
@@ -66,7 +67,7 @@ describe('authorOrAdmin', () => {
   })
 
   it('returns the passed entity when author is admin', () => {
-    user.role = 'admin'
+    user.role = admin
     expect(response.authorOrAdmin(res, user, 'user')(entity)).toEqual(entity)
   })
 

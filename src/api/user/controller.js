@@ -1,4 +1,5 @@
 import { success, notFound } from '../../services/response/'
+import userRoles, { admin } from './user-roles'
 import { User } from '.'
 import { Flight } from '../flight'
 
@@ -42,7 +43,7 @@ export const update = ({ bodymen: { body }, params, user }, res, next) =>
     .then(notFound(res))
     .then((result) => {
       if (!result) return null
-      const isAdmin = user.role === 'admin'
+      const isAdmin = user.role === admin
       const isSelfUpdate = user.id === result.id
       if (!isSelfUpdate && !isAdmin) {
         res.status(401).json({
@@ -58,26 +59,20 @@ export const update = ({ bodymen: { body }, params, user }, res, next) =>
       const purifiedBody = Object.keys(body).reduce((acc, key) => body[key] ? { ...acc, [key]: body[key] } : acc, {});
 
       if (purifiedBody.flights) {
-        if (purifiedBody.flights.action === 'append') {
-          purifiedBody.flights = [...user.flights, purifiedBody.flights.flight];
+        if (!user.flights.includes(purifiedBody.flights.flight)) {
+          if (purifiedBody.flights.action === 'append') {
+            purifiedBody.flights = [...user.flights, purifiedBody.flights.flight];
+          } else {
+            purifiedBody.flights = user.flights.filter(f => f !== purifiedBody.flights.flight)
+          }
+          addPassengerToFlight(purifiedBody, params)
         } else {
-          purifiedBody.flights = user.flights.filter(f => f !== purifiedBody.flights.flight)
+          purifiedBody.flights = user.flights
         }
-      }     
+      }       
       return Object.assign(user, purifiedBody).save();
     })
     .then((user) => user ? user.view(true) : null)
-    .then((user) => {
-      if (!user || !user.flights) return null
-      user.flights.forEach(async flight => {
-        await Flight.findByIdAndUpdate(
-          { _id: flight },
-          { $push: { passengers: params.id } },
-          { new: true, useFindAndModify: false }
-        );
-      })
-      return user
-    })
     .then(success(res))
     .catch(next)
 
@@ -105,15 +100,26 @@ export const updatePassword = ({ bodymen: { body }, params, user }, res, next) =
 export const destroy = ({ params }, res, next) =>
   User.findById(params.id)
     .then(notFound(res))
-    .then(async (user) => {
-      await updateFlights (user, params)
+    .then((user) => {
+      removePassengerFromFlight(user, params)
       return user
     })
     .then((user) => user ? user.remove() : null)
     .then(success(res, 204))
     .catch(next)
 
-    async function updateFlights (user, params) {
+    async function addPassengerToFlight (user, params) {
+      if (!user || !user.flights.length) return null
+      user.flights.forEach(async flight => {
+        await Flight.findByIdAndUpdate(
+          { _id: flight },
+          { $push: { passengers: params.id } },
+          { new: true, useFindAndModify: false }
+        );
+      })
+    }
+    
+    async function removePassengerFromFlight (user, params) {
       if (!user || !user.flights.length) return null
       user.flights.forEach(async flight => {
         const foundFlight = await Flight.findById(flight._id)
@@ -121,4 +127,3 @@ export const destroy = ({ params }, res, next) =>
         foundFlight.save()
       })
     }
-
