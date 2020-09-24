@@ -1,6 +1,7 @@
 import { success, notFound } from '../../services/response'
 import { Plain } from '.'
 import { Flight } from '../flight'
+import { User } from '../user'
 
 export const index = ({ querymen: { query, select, cursor } }, res, next) =>
   Plain.find(query, select, cursor)
@@ -49,10 +50,28 @@ export const update = ({ bodymen: { body }, params, plain }, res, next) =>
 export const destroy = ({ params }, res, next) =>
   Plain.findById(params.id)
     .then(notFound(res))
-    // .then(async (plain) => {
-    //   await deleteFlights (plain, params)
-    // })
-    // .then((plain) => plain ? plain.remove() : null)
+    .then(async (plain) => {
+      await deleteFlights (plain)
+      return plain
+    })
+    .then((plain) => plain ? plain.remove() : null)
     .then(success(res, 204))
     .catch(next)
 
+    async function deleteFlights (plain) {
+      if (!plain || !plain.flights.length) return null
+      plain.flights.forEach(async flight => {
+        const foundFlight = await Flight.findById(flight._id)
+        await updatePassengers(foundFlight)
+        foundFlight.remove()
+      })
+    }
+
+    async function updatePassengers (removableFlight) {
+      if (!removableFlight || !removableFlight.passengers.length) return null
+      removableFlight.passengers.forEach(async passenger => {
+        const user = await User.findById(passenger._id)
+        user.flights = user.flights.filter(flight => flight._id.toString() !== removableFlight._id.toString())
+        user.save()
+      })
+    }
