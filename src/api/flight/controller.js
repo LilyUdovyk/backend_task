@@ -1,3 +1,5 @@
+import * as jsonpatch from 'fast-json-patch';
+import { applyOperation } from 'fast-json-patch';
 import { success, notFound } from '../../services/response'
 import { admin } from '../user/user-roles'
 import { Flight } from '.'
@@ -42,13 +44,27 @@ export const create = ({ bodymen: { body } }, res, next) =>
     .then(success(res))
     .catch(next)
 
-export const update = ({ bodymen: { body }, params, flight }, res, next) =>
+export const update = ({ bodymen: { body }, params }, res, next) =>
   Flight.findById(params.id)
     .then(notFound(res))
     .then((flight) => {
       if (!flight) return null;
       const purifiedBody = Object.keys(body).reduce((acc, key) => body[key] ? { ...acc, [key]: body[key] } : acc, {});     
       return Object.assign(flight, purifiedBody).save();
+    })
+    .then((flight) => flight ? flight.view(true) : null)
+    .then(success(res))
+    .catch(next)
+
+export const patchUpdate = ({ body , params }, res, next) =>
+  Flight.findById(params.id)
+    .then(notFound(res))
+    .then((flight) => {
+      console.log("flight", flight)
+      console.log("body", body)
+      flight = jsonpatch.applyPatch(flight, body).newDocument;
+      console.log("flight", flight)
+      return flight.save()
     })
     .then((flight) => flight ? flight.view(true) : null)
     .then(success(res))

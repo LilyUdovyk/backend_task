@@ -1,8 +1,8 @@
 import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
-import { password as passwordAuth, master, token } from '../../services/passport'
-import { index, show, create, update, destroy } from './controller'
+import { password as master, token } from '../../services/passport'
+import { index, show, create, update, patchUpdate, destroy } from './controller'
 import { admin } from '../user/user-roles'
 import { schema } from './model'
 export Flight, { schema } from './model'
@@ -69,6 +69,11 @@ router.put('/:id',
   token({ required: true, roles: admin }),
   body({ plane: { ...plane, required: false }, time }),
   update)
+
+router.patch('/:id',
+  token({ required: true, roles: admin }),
+  // body,
+  patchUpdate)
 
 /**
  * @api {delete} /flights/:id Delete flight
